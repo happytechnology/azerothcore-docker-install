@@ -9,6 +9,12 @@ set -euo pipefail
 SERVER_IP="${1:-}"
 ACORE_DIR="${HOME}/azerothcore-wotlk"
 
+# Helper to run a command with the docker group active
+# (needed because usermod does not affect the current shell)
+run_docker() {
+  sg docker -c "$1"
+}
+
 echo "=== AzerothCore WotLK Docker Install (Arch Linux) ==="
 
 # 1. Update system and install packages
@@ -20,7 +26,7 @@ sudo pacman -S --needed --noconfirm docker docker-compose docker-buildx git
 echo "[2/6] Enabling Docker service..."
 sudo systemctl enable --now docker
 sudo usermod -aG docker "$USER" || true
-# Note: group change requires new login or newgrp; script continues in current session if possible
+# Note: group change requires new login for future shells; this script uses sg docker below
 
 # 3. Enable BuildKit permanently
 echo "[3/6] Configuring BuildKit..."
@@ -41,20 +47,16 @@ else
 fi
 cd "$ACORE_DIR"
 
-# 5. Build and start the stack
+# 5. Build and start the stack (via sg docker so group membership is active)
 echo "[5/6] Building and starting containers (this may take a long time on first run)..."
-docker compose up -d --build
+run_docker "docker compose up -d --build"
 
 # Wait for database to become healthy
 echo "Waiting for ac-database to become healthy..."
 for i in {1..60}; do
-  if docker compose ps --format json | grep -q '"Health":"healthy"' && \
-     docker compose ps --format json | grep -q 'ac-database'; then
-    # More reliable check
-    if docker inspect --format '{{.State.Health.Status}}' ac-database 2>/dev/null | grep -q healthy; then
-      echo "Database is healthy."
-      break
-    fi
+  if run_docker "docker inspect --format '{{.State.Health.Status}}' ac-database 2>/dev/null" | grep -q healthy; then
+    echo "Database is healthy."
+    break
   fi
   sleep 10
   if [ "$i" -eq 60 ]; then
@@ -66,8 +68,7 @@ done
 # 6. Update realmlist if an IP was provided
 if [ -n "$SERVER_IP" ]; then
   echo "[6/6] Updating realmlist address to $SERVER_IP..."
-  docker exec -i ac-database mysql -uroot -ppassword acore_auth \
-    -e "UPDATE realmlist SET address='${SERVER_IP}', flag=0 WHERE id=1;"
+  run_docker "docker exec -i ac-database mysql -uroot -ppassword acore_auth -e \"UPDATE realmlist SET address='${SERVER_IP}', flag=0 WHERE id=1;\""
 else
   echo "[6/6] No SERVER_IP provided. Realmlist left at default (127.0.0.1)."
   echo "Update later with:"
@@ -90,3 +91,6 @@ echo "  docker compose restart ac-authserver ac-worldserver"
 echo ""
 echo "Default MySQL root password: password"
 echo "Ports: Auth 3724, World 8085, SOAP 7878, MySQL 3306"
+echo ""
+echo "Note: You may need to log out and back in (or run 'newgrp docker')"
+echo "so that future shells can run docker without 'sg docker'."
