@@ -6,7 +6,9 @@ This guide consolidates the steps that successfully worked around MySQL source-b
 
 ## One-command install
 
-A single script is provided that automates the entire process:
+A single script is provided that automates the entire process.
+
+### Usage
 
 ```bash
 # Clone this repository first (or download the script)
@@ -18,7 +20,21 @@ chmod +x install.sh
 ./install.sh 10.0.0.18
 ```
 
-The script installs packages, enables Docker + BuildKit, clones AzerothCore, starts the stack, waits for the database to become healthy, and (if an IP was given) updates the realmlist. After it finishes, attach to the worldserver and create accounts as described below.
+The script installs packages, enables Docker + BuildKit, clones AzerothCore, starts the stack, waits for the database to become healthy, and (if an IP was given) updates the realmlist.
+
+### After it finishes, attach to the worldserver and create accounts as usual:
+
+```bash
+docker attach ac-worldserver
+```
+
+At the `AC>` prompt:
+
+```
+account create YOURUSERNAME yourpassword 3 -1
+```
+
+Detach with `Ctrl+P` then `Ctrl+Q` (**do not** use `Ctrl+C`).
 
 ## Prerequisites
 
