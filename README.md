@@ -4,6 +4,22 @@ Repeatable installation of AzerothCore WotLK using Docker with the official `mys
 
 This guide consolidates the steps that successfully worked around MySQL source-build issues (OOM/LTO) by using the official AzerothCore Docker setup. It covers a clean install from scratch.
 
+## One-command install
+
+A single script is provided that automates the entire process:
+
+```bash
+# Clone this repository first (or download the script)
+git clone https://github.com/happytechnology/azerothcore-docker-install.git
+cd azerothcore-docker-install
+chmod +x install.sh
+
+# Optional: pass the IP that clients will use to connect
+./install.sh 10.0.0.18
+```
+
+The script installs packages, enables Docker + BuildKit, clones AzerothCore, starts the stack, waits for the database to become healthy, and (if an IP was given) updates the realmlist. After it finishes, attach to the worldserver and create accounts as described below.
+
 ## Prerequisites
 
 - Arch Linux (updated)
@@ -11,7 +27,9 @@ This guide consolidates the steps that successfully worked around MySQL source-b
 - Sufficient disk space (client data + database volumes) and RAM (the Docker build is memory-intensive; 8 GB+ recommended)
 - Git
 
-## 1. Install Docker and required plugins
+## Manual steps (if you prefer not to use the script)
+
+### 1. Install Docker and required plugins
 
 ```bash
 sudo pacman -Syu
@@ -29,7 +47,7 @@ docker compose version
 docker buildx version
 ```
 
-## 2. Enable BuildKit
+### 2. Enable BuildKit
 
 BuildKit is required by the AzerothCore Dockerfile (`RUN --mount=...`).
 
@@ -50,7 +68,7 @@ sudo systemctl restart docker
 
 If you see a warning about the buildx plugin, the classic builder still works for this setup once BuildKit is enabled.
 
-## 3. Clone AzerothCore
+### 3. Clone AzerothCore
 
 ```bash
 cd ~
@@ -62,7 +80,7 @@ All subsequent commands must be run from inside this directory.
 
 > If you need a specific fork (e.g. Playerbot), clone that repository and check out the correct branch instead.
 
-## 4. Start the stack
+### 4. Start the stack
 
 ```bash
 docker compose up -d --build
@@ -83,7 +101,7 @@ docker compose ps
 
 The `ac-db-import` service is a one-shot container that runs only on first start (or after the database volume is removed). Once it completes successfully, the auth and world servers start.
 
-## 5. Update realmlist (recommended)
+### 5. Update realmlist (recommended)
 
 By default the realm address is `127.0.0.1`. Update it to the IP clients will use:
 
@@ -93,7 +111,7 @@ docker exec -i ac-database mysql -uroot -ppassword acore_auth -e "UPDATE realmli
 
 Replace `YOUR_SERVER_IP` with the address clients can reach (e.g. `10.0.0.18` or a public IP). Flag `0` marks the realm as online/normal.
 
-## 6. Create an account
+### 6. Create an account
 
 Attach to the worldserver console:
 
