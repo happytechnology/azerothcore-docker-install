@@ -11,6 +11,8 @@ A single script is provided that automates the entire process.
 ### Usage
 
 ```bash
+# Install git
+sudo pacman -S git --noconfirm
 # Clone this repository first (or download the script)
 git clone https://github.com/happytechnology/azerothcore-docker-install.git
 cd azerothcore-docker-install
