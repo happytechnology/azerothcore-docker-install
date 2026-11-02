@@ -151,5 +151,6 @@ Data persists in Docker volumes (`ac-database`, `ac-client-data`) and survives c
 ## Notes
 
 - Official AzerothCore Docker guide: https://www.azerothcore.org/wiki/install-with-docker
+- Source document referenced during setup: https://zread.ai/azerothcore/azerothcore-wotlk/3-docker-deployment
 - The Docker setup uses the official `mysql:8.4` image, avoiding the need to compile MySQL from source.
 - After restoring databases, run any pending AzerothCore database updates if required by your core version.
