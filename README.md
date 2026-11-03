@@ -153,6 +153,7 @@ Replace `YOUR_SERVER_IP` with the LAN IP, public IP, or hostname that your WoW c
 See the one-command section above.
 
 ```bash
+docker attach ac-worldserver
 account create TINSMAN yourpassword 3 -1
 ```
 
