@@ -165,7 +165,7 @@ A database exported from MariaDB 10.11 (Debian 12; `mariadb-dump`) does not load
 
 Use the converter and the full procedure in [tools/mariadb-to-mysql/README.md](tools/mariadb-to-mysql/README.md): how to dump MariaDB, how the column mapping works, and the `docker exec` / `docker compose` commands for `ac-database`, `ac-authserver`, and `ac-worldserver`. Import order is auth, then characters, then playerbots.
 
-Leave the old `acore_world` dump unused. `ac-db-import` loads the world database this core expects. The converter was checked in Python against real dumps (row counts matched) and has not yet been imported into a live MySQL 8.4 server; that import is being tested now.
+Dump the old `acore_world` with the other databases and keep that file. Do not convert it and do not import it. `ac-db-import` loads the world database this core expects. The dump is the archive for finding custom world edits and re-applying them by hand. The converter was checked in Python against real dumps (row counts matched) and has not yet been imported into a live MySQL 8.4 server; that import is being tested now.
 
 Data persists in Docker volumes (`ac-database`, client data volumes) and survives container restarts. To fully reset the database, stop the stack and remove the volume:
 

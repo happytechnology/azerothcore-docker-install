@@ -33,4 +33,15 @@ _, rows = ins(c, 'quest_tracker'); check('quest_tracker: NULL id -> 0', rows[0].
 check('playerbots_names skipped in characters run', 'playerbots_names' not in c)
 p = conv('tests/old_chars.sql', '--no-embedded', '--only-tables', 'playerbots_names')
 check('playerbots_names via --only-tables', "INTO `playerbots_names` (`name_id`,`name`,`gender`,`in_use`)" in p)
+world, world_out = '/tmp/_acore_world_archive.sql', '/tmp/_acore_world_out.sql'
+if os.path.exists(world_out): os.remove(world_out)
+open(world, 'w').write("-- Host: localhost    Database: acore_world\n"
+                       "CREATE TABLE `creature` (`guid` int unsigned NOT NULL);\n"
+                       "INSERT INTO `creature` VALUES (1);\n")
+r = subprocess.run([sys.executable, 'convert_mariadb_to_mysql.py', world, world_out], capture_output=True, text=True)
+r_db = subprocess.run([sys.executable, 'convert_mariadb_to_mysql.py', 'tests/old_auth.sql', world_out, '--db', 'acore_world'], capture_output=True, text=True)
+r_override = subprocess.run([sys.executable, 'convert_mariadb_to_mysql.py', world, world_out, '--db', 'acore_auth'], capture_output=True, text=True)
+refused = lambda p: p.returncode != 0 and 'refusing to convert acore_world' in p.stderr
+check('acore_world dump is refused and no output is written',
+      refused(r) and refused(r_db) and refused(r_override) and not os.path.exists(world_out))
 print(f'{ok} passed')
