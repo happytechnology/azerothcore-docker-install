@@ -74,6 +74,22 @@ EOF
   echo "Created docker-compose.override.yml"
 fi
 
+# Copy module .conf.dist files so the server does not warn about missing configs
+echo "Copying module configuration templates..."
+mkdir -p env/dist/etc/modules
+[ -f modules/mod-no-hearthstone-cooldown/conf/mod_no_hearthstone_cooldown.conf.dist ] && \
+  cp -n modules/mod-no-hearthstone-cooldown/conf/mod_no_hearthstone_cooldown.conf.dist \
+         env/dist/etc/modules/mod_no_hearthstone_cooldown.conf || true
+[ -f modules/mod-dungeon-clear/conf/mod_dungeon_clear.conf.dist ] && \
+  cp -n modules/mod-dungeon-clear/conf/mod_dungeon_clear.conf.dist \
+         env/dist/etc/modules/mod_dungeon_clear.conf || true
+[ -f modules/mod-npc-enchanter/conf/npc_enchanter.conf.dist ] && \
+  cp -n modules/mod-npc-enchanter/conf/npc_enchanter.conf.dist \
+         env/dist/etc/modules/npc_enchanter.conf || true
+[ -f modules/mod-playerbots/conf/playerbots.conf.dist ] && \
+  cp -n modules/mod-playerbots/conf/playerbots.conf.dist \
+         env/dist/etc/modules/playerbots.conf || true
+
 # Optional: copy playerbots SQL into custom import path for more reliable first import
 mkdir -p data/sql/custom/db_characters data/sql/custom/db_world data/sql/custom/db_auth
 if [ -d modules/mod-playerbots/sql/characters/base ]; then
@@ -130,8 +146,9 @@ echo ""
 echo "Default MySQL root password: password"
 echo "Ports: Auth 3724, World 8085, SOAP 7878, MySQL 3306"
 echo ""
-echo "Playerbots config lives in env/dist/etc/modules/playerbots.conf after first start."
-echo "See README for recommended settings."
+echo "Module configs have been copied to env/dist/etc/modules/"
+echo "Edit them and restart the worldserver if you want to change defaults."
+echo "See README for recommended playerbots settings."
 echo ""
 echo "Note: You may need to log out and back in (or run 'newgrp docker')"
 echo "so that future shells can run docker without 'sg docker'."
