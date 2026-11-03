@@ -117,15 +117,28 @@ for i in {1..90}; do
   fi
 done
 
-# 7. Update realmlist if an IP was provided
+# 7. Ensure a valid default realm exists, then set the server IP if provided
+echo "[7/7] Ensuring a valid realm exists in realmlist..."
+run_docker "docker exec -i ac-database mysql -uroot -ppassword acore_auth -e \"
+INSERT INTO realmlist (id, name, address, localAddress, localSubnetMask, port, icon, flag, timezone, allowedSecurityLevel, population, gamebuild)
+VALUES (1, 'AzerothCore', '127.0.0.1', '127.0.0.1', '255.255.255.0', 8085, 0, 0, 1, 0, 0, 12340)
+ON DUPLICATE KEY UPDATE
+  address = IF(address = '' OR address IS NULL, '127.0.0.1', address),
+  flag = 0,
+  port = 8085;
+\""
+
 if [ -n "$SERVER_IP" ]; then
-  echo "[7/7] Updating realmlist address to $SERVER_IP..."
+  echo "Updating realmlist address to $SERVER_IP..."
   run_docker "docker exec -i ac-database mysql -uroot -ppassword acore_auth -e \"UPDATE realmlist SET address='${SERVER_IP}', flag=0 WHERE id=1;\""
 else
-  echo "[7/7] No SERVER_IP provided. Realmlist left at default (127.0.0.1)."
+  echo "No SERVER_IP provided. Realmlist left at 127.0.0.1 (flag=0)."
   echo "Update later with:"
   echo "  docker exec -i ac-database mysql -uroot -ppassword acore_auth -e \"UPDATE realmlist SET address='YOUR_IP', flag=0 WHERE id=1;\""
 fi
+
+# Restart authserver so it picks up the realmlist change
+run_docker "docker compose restart ac-authserver" || true
 
 echo ""
 echo "=== Install complete ==="
