@@ -1,0 +1,25 @@
+ai_playerbot_texts id name text say_type reply_type text_loc1 text_loc2 text_loc3 text_loc4 text_loc5 text_loc6 text_loc7 text_loc8
+ai_playerbot_texts_chance id name probability
+playerbots_custom_strategy id name idx owner action_line
+playerbots_db_store id guid key value
+playerbots_dungeon_suggestion_abbrevation id definition_slug abbrevation
+playerbots_dungeon_suggestion_definition id slug name expansion difficulty min_level max_level comment
+playerbots_dungeon_suggestion_strategy id definition_slug strategy difficulty
+playerbots_enchants class spec spellid slotid name
+playerbots_equip_cache id clazz lvl slot quality item
+playerbots_guild_tasks id owner guildid time validIn type value data
+playerbots_item_info_cache id quality slot source sourceId team faction factionRepRank minLevel scale_1 scale_2 scale_3 scale_4 scale_5 scale_6 scale_7 scale_8 scale_9 scale_10 scale_11 scale_12 scale_13 scale_14 scale_15 scale_16 scale_17 scale_18 scale_19 scale_20 scale_21 scale_22 scale_23 scale_24 scale_25 scale_26 scale_27 scale_28 scale_29 scale_30 scale_31 scale_32
+playerbots_random_bots id owner bot time validIn event value data
+playerbots_rarity_cache id item rarity
+playerbots_rnditem_cache id lvl type item
+playerbots_speech id name text type
+playerbots_speech_probability id name probability
+playerbots_tele_cache id level map_id x y z
+playerbots_travelnode id name map_id x y z linked
+playerbots_travelnode_link node_id to_node_id type object distance swim_distance extra_cost calculated max_creature_0 max_creature_1 max_creature_2
+playerbots_travelnode_path node_id to_node_id nr map_id x y z
+playerbots_weightscale_data id field val
+playerbots_weightscales id name class
+updates name hash state timestamp speed
+updates_include path state
+version_db_playerbots sql_rev required_rev date

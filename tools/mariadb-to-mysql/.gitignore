@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+
+# Source dumps and converter output can contain accounts, password
+# hashes, and emails. Never commit them. Synthetic fixtures under
+# tests/ are the only SQL rows that belong in git.
+/old_*.sql
+/auth.sql
+/chars.sql
+/chars_bots.sql
+/bots.sql
+/new_backup.sql
+/new_mysql84_backup.sql
+/*_err.log
+*.dump
+*.dump.sql

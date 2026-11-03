@@ -1,0 +1,6 @@
+# db table column fill  -- only applied when the old dump lacks the column
+# (from DIFF_REPORT.md; all other added columns have DEFAULTs in the new schema)
+acore_characters characters innTriggerId 0
+acore_characters character_arena_stats maxMMR 0
+acore_characters gm_survey maxMMR 0
+acore_characters character_instance extended 0
