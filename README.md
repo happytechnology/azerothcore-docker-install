@@ -6,7 +6,7 @@ This guide consolidates the steps that successfully worked around MySQL source-b
 
 ## One-command install
 
-A single script is provided that automates the entire process (Playerbot fork + modules + override file).
+A single script is provided that automates the entire process (Playerbot fork + modules + override file + config templates).
 
 ### Usage
 
@@ -23,7 +23,7 @@ chmod +x install.sh
 ./install.sh 10.0.0.18
 ```
 
-The script installs packages, enables Docker + BuildKit, clones the Playerbot fork of AzerothCore, clones the four modules, creates `docker-compose.override.yml`, starts the stack, waits for the database to become healthy, and (if an IP was given) updates the realmlist.
+The script installs packages, enables Docker + BuildKit, clones the Playerbot fork of AzerothCore, clones the four modules, creates `docker-compose.override.yml`, copies module `.conf.dist` templates into place (so the server does not warn about missing configs), starts the stack, waits for the database to become healthy, and (if an IP was given) updates the realmlist.
 
 ### After it finishes, attach to the worldserver and create accounts as usual:
 
@@ -78,7 +78,7 @@ git clone https://github.com/mod-playerbots/azerothcore-wotlk.git --branch Playe
 cd azerothcore-wotlk
 ```
 
-### 4. Clone modules and create override
+### 4. Clone modules, create override, and copy configs
 
 ```bash
 mkdir -p modules
@@ -101,6 +101,17 @@ services:
     volumes:
       - ./modules:/azerothcore/modules:ro
 EOF
+
+# Copy .conf.dist templates so the server does not warn about missing configs
+mkdir -p env/dist/etc/modules
+cp -n modules/mod-no-hearthstone-cooldown/conf/mod_no_hearthstone_cooldown.conf.dist \
+      env/dist/etc/modules/mod_no_hearthstone_cooldown.conf
+cp -n modules/mod-dungeon-clear/conf/mod_dungeon_clear.conf.dist \
+      env/dist/etc/modules/mod_dungeon_clear.conf
+cp -n modules/mod-npc-enchanter/conf/npc_enchanter.conf.dist \
+      env/dist/etc/modules/npc_enchanter.conf
+cp -n modules/mod-playerbots/conf/playerbots.conf.dist \
+      env/dist/etc/modules/playerbots.conf
 ```
 
 ### 5. Start the stack
@@ -138,19 +149,19 @@ docker compose down
 docker volume rm azerothcore-wotlk_ac-database
 ```
 
-## Configuring Playerbots
+## Configuring modules
 
-After the first start, the configuration file appears at:
+Module configuration files live under `env/dist/etc/modules/`. The install script (and the manual steps above) copy the `.conf.dist` templates into place so the worldserver does not log “Failed open file” warnings.
 
+You can edit those files on the host and restart the worldserver for changes to take effect:
+
+```bash
+docker compose restart ac-worldserver
 ```
-env/dist/etc/modules/playerbots.conf
-```
 
-You can edit it on the host and restart the worldserver (`docker compose restart ac-worldserver`).
+### Playerbots key settings (recommended starting point)
 
-### Key settings (recommended starting point)
-
-Open `playerbots.conf` and look for these (names may be `AiPlayerbot.` or `Playerbots.` depending on version):
+Open `env/dist/etc/modules/playerbots.conf` and look for these (names may be `AiPlayerbot.` or `Playerbots.` depending on version):
 
 - `Playerbots.Enabled = 1` — must be on
 - `Playerbots.RandomBotAutologin = 1` — bots log in automatically
@@ -183,6 +194,7 @@ Full documentation: https://github.com/mod-playerbots/mod-playerbots/wiki/Player
 - Ports: Auth `3724`, World `8085`, SOAP `7878`, MySQL `3306`.
 - Client `realmlist.wtf`: `set realmlist YOUR_SERVER_IP`
 - To update later: `git pull` inside the core and each module directory, then `docker compose up -d --build`.
+- The “Can't set process priority class” message is normal in Docker and can be ignored.
 
 ## Notes
 
