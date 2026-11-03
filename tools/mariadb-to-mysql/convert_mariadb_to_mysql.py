@@ -9,6 +9,9 @@ Known schema changes get explicit transforms (see TRANSFORMS / DIFF_REPORT.md).
 Usage:
   python3 convert_mariadb_to_mysql.py IN.sql OUT.sql [--dup ignore|replace|error] [--truncate]
          [--skip-tables a,b] [--db acore_characters] [--target-schema new_nodata.sql]
+
+extract_character.py imports the parser and the per-table transforms below. That tool
+writes one character; this script is still the whole-dump converter.
 """
 import argparse, os, re, sys
 
@@ -142,6 +145,55 @@ def load_fills(db):
             if d == db: fills.setdefault(t, {})[c] = v.strip()
     return fills
 
+INSERT_RE = re.compile(
+    r'INSERT\s+(?:IGNORE\s+)?INTO\s+`?(\w+)`?\s*(\([^)]*\))?\s*VALUES\s*(.*);$',
+    re.S | re.I)
+
+def detect_db(path):
+    """Database name from the mariadb-dump header comment, if present."""
+    with open(path, encoding='utf-8', errors='surrogateescape') as f:
+        for _ in range(10):
+            line = f.readline()
+            if not line:
+                break
+            m = re.search(r'Database: (\w+)', line)
+            if m:
+                return m.group(1)
+    return None
+
+def parse_insert(stmt):
+    """Return (table, column_list_or_None, values_body) or None."""
+    m = INSERT_RE.match(stmt)
+    if not m:
+        return None
+    return m.group(1), m.group(2), m.group(3)
+
+def prepare_row(db, table, scols, values, fills, extra):
+    """Map one dump tuple onto column names and apply that table's transform.
+
+    Returns (row_dict, filled_column_names). row_dict is None when the tuple
+    length does not match `scols`. Transforms may append child rows to `extra`.
+    """
+    if not scols or len(values) != len(scols):
+        return None, []
+    ren = RENAMES.get(db, {}).get(table, {})
+    row = {ren.get(c, c): v for c, v in zip(scols, values)}
+    fn = TRANSFORMS.get(db, {}).get(table)
+    if fn:
+        row = fn(row, extra)
+    filled = []
+    for c, v in fills.get(table, {}).items():
+        if c not in row:
+            row[c] = v
+            filled.append(c)
+    return row, filled
+
+def project_row(row, target_cols):
+    """Return (columns in target order, values, old columns the target does not have)."""
+    dropped = [c for c in row if c not in target_cols]
+    cols = [c for c in target_cols if c in row]
+    return cols, [row[c] for c in cols], dropped
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('inp'); ap.add_argument('out')
@@ -154,12 +206,7 @@ def main():
     a = ap.parse_args()
     skip = {t for t in a.skip_tables.split(',') if t}
     only = {t for t in a.only_tables.split(',') if t}
-    db = a.db
-    if not db:
-        with open(a.inp, encoding='utf-8', errors='surrogateescape') as f:
-            for _ in range(10):
-                m = re.search(r'Database: (\w+)', f.readline())
-                if m: db = m.group(1); break
+    db = a.db or detect_db(a.inp)
     target = None
     if a.target_schema:
         target = {}
@@ -173,9 +220,8 @@ def main():
         print(f'using bundled target schema for {db} ({len(target)} tables)', file=sys.stderr)
     else:
         print(f'no target schema for {db!r}: columns pass through unmapped', file=sys.stderr)
-    fills = load_fills(db); tf = TRANSFORMS.get(db, {}); ren = RENAMES.get(db, {})
+    fills = load_fills(db)
     verb = {'ignore': 'INSERT IGNORE', 'replace': 'REPLACE', 'error': 'INSERT'}[a.dup]
-    ins_re = re.compile(r'INSERT\s+(?:IGNORE\s+)?INTO\s+`?(\w+)`?\s*(\([^)]*\))?\s*VALUES\s*(.*);$', re.S | re.I)
     src = {}; truncated = set()
     st = {'stmts': 0, 'rows': 0, 'stubs': 0, 'dropped': {}, 'filled': {}, 'skipped': set(), 'bad': 0, 'extra': 0}
 
@@ -197,9 +243,9 @@ def main():
                 continue
             if not u.startswith('INSERT'):
                 continue                                   # DDL / sandbox / session SETs dropped: new schema is authoritative
-            m = ins_re.match(s)
-            if not m: o.write('-- UNPARSED: ' + s[:200].replace('\n', ' ') + '\n'); continue
-            t, collist, body = m.groups()
+            parsed = parse_insert(s)
+            if not parsed: o.write('-- UNPARSED: ' + s[:200].replace('\n', ' ') + '\n'); continue
+            t, collist, body = parsed
             if not body.strip():
                 st['stubs'] += 1; continue
             if t in skip or (only and t not in only) or (target is not None and t not in target):
@@ -209,19 +255,19 @@ def main():
             if not scols or target is None:
                 emit(o, t, scols or [], rows) if scols else o.write(f'{verb} INTO `{t}` VALUES {body};\n')
                 st['stmts'] += 1; st['rows'] += len(rows); continue
-            tcols = target[t]; rmap = ren.get(t, {})
+            tcols = target[t]
             out, extra = [], []
             for r in rows:
-                if len(r) != len(scols): st['bad'] += 1; continue
-                d = {rmap.get(c, c): v for c, v in zip(scols, r)}
-                if t in tf: d = tf[t](d, extra)
-                for c, v in fills.get(t, {}).items():
-                    if c not in d: d[c] = v; st['filled'].setdefault(t, set()).add(c)
+                d, filled = prepare_row(db, t, scols, r, fills, extra)
+                if d is None:
+                    st['bad'] += 1
+                    continue
+                if filled:
+                    st['filled'].setdefault(t, set()).update(filled)
                 out.append(d)
             if not out: continue
-            dropped = [c for c in out[0] if c not in tcols]
+            cols, _, dropped = project_row(out[0], tcols)
             if dropped: st['dropped'].setdefault(t, set()).update(dropped)
-            cols = [c for c in tcols if c in out[0]]       # new-schema order
             emit(o, t, cols, [[d[c] for c in cols] for d in out])
             st['stmts'] += 1; st['rows'] += len(out)
             groups = {}

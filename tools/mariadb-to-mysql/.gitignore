@@ -4,6 +4,8 @@ __pycache__/
 # Source dumps and converter output can contain accounts, password
 # hashes, and emails. Never commit them. Synthetic fixtures under
 # tests/ are the only SQL rows that belong in git.
+# extract_character.py default output (one character's rows).
+/character_*.sql
 /old_*.sql
 /auth.sql
 /chars.sql
