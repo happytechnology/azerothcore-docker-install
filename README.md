@@ -152,6 +152,10 @@ Replace `YOUR_SERVER_IP` with the LAN IP, public IP, or hostname that your WoW c
 
 See the one-command section above.
 
+```bash
+account create TINSMAN yourpassword 3 -1
+```
+
 ## Useful commands
 
 | Action                    | Command                                      |
