@@ -1,0 +1,30 @@
+# raw/old_auth_nodata.sql -> raw/new_auth_nodata.sql
+
+only in OLD: -
+only in NEW: ['autobroadcast_locale', 'motd_localized', 'rbac_account_permissions', 'rbac_default_permissions', 'rbac_linked_permissions', 'rbac_permissions']
+
+## account
+  + added: Flags [int unsigned NOT NULL DEFAULT '0',] after expansion
+  ~ locale: tinyint(3) unsigned NOT NULL DEFAULT 0,  ->  varchar(4) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'enUS',
+
+## logs
+  ~ string: text DEFAULT NULL  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
+
+## logs_ip_actions
+  ~ systemnote: text DEFAULT NULL COMMENT 'Notes inserted by system',  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci COMMENT 'Notes inserted by system',
+  ~ comment: text DEFAULT NULL COMMENT 'Allows users to add a comment',  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci COMMENT 'Allows users to add a comment',
+
+## motd
+  ~ text: longtext DEFAULT 'TESTING123',  ->  longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+
+## realmlist
+  ~ keys: ['CONSTRAINT `realmlist_chk_1` CHECK (`population` >= 0)', 'PRIMARY KEY (`id`)', 'UNIQUE KEY `idx_name` (`name`)'] -> ['CONSTRAINT `realmlist_chk_1` CHECK ((`population` >= 0))', 'PRIMARY KEY (`id`)', 'UNIQUE KEY `idx_name` (`name`)']
+
+## updates
+  ~ state: enum('RELEASED','CUSTOM','MODULE','ARCHIVED') NOT NULL DEFAULT 'RELEASED' COMMENT 'defines if an update is released or archived.',  ->  enum('RELEASED','CUSTOM','MODULE','ARCHIVED','PENDING') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'RELEASED' COMMENT 'defines if an update is released or archived.',
+
+## updates_include
+  ~ state: enum('RELEASED','ARCHIVED','CUSTOM') NOT NULL DEFAULT 'RELEASED' COMMENT 'defines if the directory contains released or archived updates.',  ->  enum('RELEASED','ARCHIVED','CUSTOM','PENDING') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'RELEASED' COMMENT 'defines if the directory contains released or archived updates.',
+
+## uptime
+  + added: EndTime [int unsigned DEFAULT NULL,] after uptime, ShutdownType [tinyint unsigned NOT NULL DEFAULT '0' COMMENT '0 = unknown, 1 = shutdown, 2 = restart, 3 = error',] after revision, ExitCode [tinyint unsigned DEFAULT NULL,] after ShutdownType, ShutdownReason [varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',] after ExitCode

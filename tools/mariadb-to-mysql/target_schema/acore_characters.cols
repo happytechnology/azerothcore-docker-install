@@ -1,0 +1,108 @@
+account_data accountId type time data
+account_instance_times accountId instanceId releaseTime
+account_tutorial accountId tut0 tut1 tut2 tut3 tut4 tut5 tut6 tut7
+active_arena_season season_id season_state
+addons name crc
+arena_team arenaTeamId name captainGuid type rating seasonGames seasonWins weekGames weekWins rank backgroundColor emblemStyle emblemColor borderStyle borderColor
+arena_team_member arenaTeamId guid weekGames weekWins seasonGames seasonWins personalRating
+auctionhouse id houseid itemguid itemowner buyoutprice time buyguid lastbid startbid deposit
+banned_addons Id Name Version Timestamp
+battleground_deserters guid type datetime
+bugreport id type content State Assignee Comment
+calendar_events id creator title description type dungeon eventtime flags time2
+calendar_invites id event invitee sender status statustime rank text
+channels channelId name team announce ownership password lastUsed
+channels_bans channelId playerGUID banTime
+channels_rights name flags speakdelay joinmessage delaymessage moderators
+character_account_data guid type time data
+character_achievement guid achievement date
+character_achievement_offline_updates guid update_type arg1 arg2 arg3
+character_achievement_progress guid criteria counter date
+character_action guid spec button action type
+character_arena_stats guid slot matchMakerRating maxMMR
+character_aura guid casterGuid itemGuid spell effectMask recalculateMask stackCount amount0 amount1 amount2 base_amount0 base_amount1 base_amount2 maxDuration remainTime remainCharges
+character_banned guid bandate unbandate bannedby banreason active
+character_battleground_random guid
+character_brew_of_the_month guid lastEventId
+character_declinedname guid genitive dative accusative instrumental prepositional
+character_entry_point guid joinX joinY joinZ joinO joinMapId taxiPath0 taxiPath1 mountSpell
+character_equipmentsets guid setguid setindex name iconname ignore_mask item0 item1 item2 item3 item4 item5 item6 item7 item8 item9 item10 item11 item12 item13 item14 item15 item16 item17 item18
+character_gifts guid item_guid entry flags
+character_glyphs guid talentGroup glyph1 glyph2 glyph3 glyph4 glyph5 glyph6
+character_homebind guid mapId zoneId posX posY posZ
+character_instance guid instance permanent extended
+character_inventory guid bag slot item
+character_pet id entry owner modelid CreatedBySpell PetType level exp Reactstate name renamed slot curhealth curmana curhappiness savetime abdata
+character_pet_declinedname id owner genitive dative accusative instrumental prepositional
+character_queststatus guid quest status explored timer mobcount1 mobcount2 mobcount3 mobcount4 itemcount1 itemcount2 itemcount3 itemcount4 itemcount5 itemcount6 playercount
+character_queststatus_daily guid quest time
+character_queststatus_monthly guid quest
+character_queststatus_rewarded guid quest active
+character_queststatus_seasonal guid quest event
+character_queststatus_weekly guid quest
+character_reputation guid faction standing flags
+character_settings guid source data
+character_skills guid skill value max
+character_social guid friend flags note
+character_spell guid spell specMask
+character_spell_cooldown guid spell category item time needSend
+character_stats guid maxhealth maxpower1 maxpower2 maxpower3 maxpower4 maxpower5 maxpower6 maxpower7 strength agility stamina intellect spirit armor resHoly resFire resNature resFrost resShadow resArcane blockPct dodgePct parryPct critPct rangedCritPct spellCritPct attackPower rangedAttackPower spellPower resilience
+character_talent guid spell specMask
+characters guid account name race class gender level xp money skin face hairStyle hairColor facialStyle bankSlots restState playerFlags position_x position_y position_z map instance_id instance_mode_mask orientation taximask online cinematic totaltime leveltime logout_time is_logout_resting rest_bonus resettalents_cost resettalents_time trans_x trans_y trans_z trans_o transguid extra_flags stable_slots at_login zone death_expire_time taxi_path arenaPoints totalHonorPoints todayHonorPoints yesterdayHonorPoints totalKills todayKills yesterdayKills chosenTitle knownCurrencies watchedFaction drunk health power1 power2 power3 power4 power5 power6 power7 latency talentGroupsCount activeTalentGroup exploredZones equipmentCache ammoId knownTitles actionBars grantableLevels order creation_date deleteInfos_Account deleteInfos_Name deleteDate innTriggerId extraBonusTalentCount
+chat_filter ID Word
+corpse guid posX posY posZ orientation mapId phaseMask displayId itemCache bytes1 bytes2 guildId flags dynFlags time corpseType instanceId
+creature_respawn guid respawnTime mapId instanceId
+game_event_condition_save eventEntry condition_id done
+game_event_save eventEntry state next_start
+gameobject_respawn guid respawnTime mapId instanceId
+gm_subsurvey surveyId questionId answer answerComment
+gm_survey surveyId guid mainSurvey comment createTime maxMMR
+gm_ticket id type playerGuid name description createTime mapId posX posY posZ lastModifiedTime closedBy assignedTo comment response completed escalated viewed needMoreHelp resolvedBy
+group_member guid memberGuid memberFlags subgroup roles
+groups guid leaderGuid lootMethod looterGuid lootThreshold icon1 icon2 icon3 icon4 icon5 icon6 icon7 icon8 groupType difficulty raidDifficulty masterLooterGuid
+guild guildid name leaderguid EmblemStyle EmblemColor BorderStyle BorderColor BackgroundColor info motd createdate BankMoney
+guild_bank_eventlog guildid LogGuid TabId EventType PlayerGuid ItemOrMoney ItemStackCount DestTabId TimeStamp
+guild_bank_item guildid TabId SlotId item_guid
+guild_bank_right guildid TabId rid gbright SlotPerDay
+guild_bank_tab guildid TabId TabName TabIcon TabText
+guild_eventlog guildid LogGuid EventType PlayerGuid1 PlayerGuid2 NewRank TimeStamp
+guild_member guildid guid rank pnote offnote
+guild_member_withdraw guid tab0 tab1 tab2 tab3 tab4 tab5 money
+guild_rank guildid rid rname rights BankMoneyPerDay
+instance id map resettime difficulty completedEncounters data
+instance_reset mapid difficulty resettime
+instance_saved_go_state_data id guid state
+item_instance guid itemEntry owner_guid creatorGuid giftCreatorGuid count duration charges flags enchantments randomPropertyId durability playedTime text
+item_loot_storage containerGUID itemid count item_index randomPropertyId randomSuffix follow_loot_rules freeforall is_blocked is_counted is_underthreshold needs_quest conditionLootId
+item_refund_instance item_guid player_guid paidMoney paidExtendedCost
+item_soulbound_trade_data itemGuid allowedPlayers
+lag_reports reportId guid lagType mapId posX posY posZ latency createTime
+lfg_data guid dungeon state
+log_arena_fights fight_id time type duration winner loser winner_tr winner_mmr winner_tr_change loser_tr loser_mmr loser_tr_change currOnline
+log_arena_memberstats fight_id member_id name guid team account ip damage heal kblows
+log_encounter time map difficulty creditType creditEntry playersInfo
+log_money sender_acc sender_guid sender_name sender_ip receiver_acc receiver_name money topic date type
+mail id messageType stationery mailTemplateId sender receiver subject body has_items expire_time deliver_time money cod checked
+mail_items mail_id item_guid receiver
+mail_server_character guid mailId
+mail_server_template id senderEntry moneyA moneyH subject body active
+mail_server_template_conditions id templateID conditionType conditionValue conditionState
+mail_server_template_items id templateID faction item itemCount
+pet_aura guid casterGuid spell effectMask recalculateMask stackCount amount0 amount1 amount2 base_amount0 base_amount1 base_amount2 maxDuration remainTime remainCharges
+pet_spell guid spell active
+pet_spell_cooldown guid spell category time
+petition ownerguid petitionguid petition_id name type
+petition_sign ownerguid petitionguid petition_id playerguid player_account type
+pool_quest_save pool_id quest_id
+profanity_name name
+pvpstats_battlegrounds id winner_faction bracket_id type date
+pvpstats_players battleground_id character_guid winner score_killing_blows score_deaths score_honorable_kills score_bonus_honor score_damage_done score_healing_done attr_1 attr_2 attr_3 attr_4 attr_5
+quest_tracker id character_guid quest_accept_time quest_complete_time quest_abandon_time completed_by_gm core_hash core_revision
+recovery_item Id Guid ItemEntry Count DeleteDate
+reserved_name name
+spam_reports ID SpamType SpammerGuid Unk1 MailIdOrMessageType ChannelId SecondsSinceMessage Description Time
+updates name hash state timestamp speed
+updates_include path state
+warden_action wardenId action
+world_state Id Data
+worldstates entry value comment

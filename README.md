@@ -159,6 +159,14 @@ Detach with `Ctrl+P` then `Ctrl+Q` (**do not** use `Ctrl+C`).
 
 Default MySQL root password is `password`.
 
+## Migrating an existing MariaDB database
+
+A database exported from MariaDB 10.11 (Debian 12; `mariadb-dump`) does not load into this stack's MySQL 8.4 as-is. Imports fail with ERROR 1064 (an `INSERT` split off its row lines), ERROR 1136 (no column list, and several tables changed width), and ERROR 1062 (duplicate keys on tables `ac-db-import` already filled).
+
+Use the converter and the full procedure in [tools/mariadb-to-mysql/README.md](tools/mariadb-to-mysql/README.md): how to dump MariaDB, how the column mapping works, and the `docker exec` / `docker compose` commands for `ac-database`, `ac-authserver`, and `ac-worldserver`. Import order is auth, then characters, then playerbots.
+
+Leave the old `acore_world` dump unused. `ac-db-import` loads the world database this core expects. The converter was checked in Python against real dumps (row counts matched) and has not yet been imported into a live MySQL 8.4 server; that import is being tested now.
+
 Data persists in Docker volumes (`ac-database`, client data volumes) and survives container restarts. To fully reset the database, stop the stack and remove the volume:
 
 ```bash

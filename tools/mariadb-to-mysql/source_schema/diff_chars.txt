@@ -1,0 +1,67 @@
+# raw/old_characters_nodata.sql -> raw/new_characters_nodata.sql
+
+only in OLD: ['playerbots_arena_team_names', 'playerbots_guild_names', 'playerbots_names']
+only in NEW: ['active_arena_season', 'character_achievement_offline_updates', 'chat_filter', 'mail_server_template_conditions', 'mail_server_template_items', 'spam_reports', 'world_state']
+
+## bugreport
+  + added: State [tinyint NOT NULL DEFAULT '1',] after content, Assignee [varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,] after State, Comment [longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,] after Assignee
+
+## channels_rights
+  ~ moderators: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+
+## character_homebind
+  - removed: posO [float NOT NULL DEFAULT 0,]
+
+## character_pet
+  ~ abdata: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+
+## character_settings
+  ~ data: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+
+## character_stats
+  ~ keys: ['CONSTRAINT `character_stats_chk_1` CHECK (`blockPct` >= 0 and `dodgePct` >= 0 and `parryPct` >= 0 and `critPct` >= 0 and `rangedCritPct` >= 0 and `spellCritPct` >= 0)', 'PRIMARY KEY (`guid`)'] -> ['CONSTRAINT `character_stats_chk_1` CHECK (((`blockPct` >= 0) and (`dodgePct` >= 0) and (`parryPct` >= 0) and (`critPct` >= 0) and (`rangedCritPct` >= 0) and (`spellCritPct` >= 0)))', 'PRIMARY KEY (`guid`)']
+
+## characters
+  ~ taxi_path: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ exploredZones: longtext DEFAULT NULL,  ->  longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ equipmentCache: longtext DEFAULT NULL,  ->  longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ knownTitles: longtext DEFAULT NULL,  ->  longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+
+## item_instance
+  ~ charges: tinytext DEFAULT NULL,  ->  tinytext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ text: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+
+## mail
+  ~ subject: longtext DEFAULT NULL,  ->  longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ body: longtext DEFAULT NULL,  ->  longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+
+## mail_server_character
+  ~ keys: ['PRIMARY KEY (`guid`,`mailId`)'] -> ['CONSTRAINT `fk_mail_server_character` FOREIGN KEY (`mailId`) REFERENCES `mail_server_template` (`id`) ON DELETE CASCADE', 'KEY `fk_mail_server_character` (`mailId`)', 'PRIMARY KEY (`guid`,`mailId`)']
+
+## mail_server_template
+  + added: senderEntry [int unsigned NOT NULL DEFAULT '0' COMMENT 'Entry from creature_template. 0 for default "Customer Support" sender.',] after id
+  - removed: reqLevel [tinyint(3) unsigned NOT NULL DEFAULT 0,], reqPlayTime [int(10) unsigned NOT NULL DEFAULT 0,], itemA [int(10) unsigned NOT NULL DEFAULT 0,], itemCountA [int(10) unsigned NOT NULL DEFAULT 0,], itemH [int(10) unsigned NOT NULL DEFAULT 0,], itemCountH [int(10) unsigned NOT NULL DEFAULT 0,]
+
+## petition
+  + added: petition_id [int unsigned NOT NULL DEFAULT '0',] after petitionguid
+  ~ keys: ['PRIMARY KEY (`ownerguid`,`type`)', 'UNIQUE KEY `index_ownerguid_petitionguid` (`ownerguid`,`petitionguid`)'] -> ['KEY `idx_petition_id` (`petition_id`)', 'PRIMARY KEY (`ownerguid`,`type`)', 'UNIQUE KEY `index_ownerguid_petitionguid` (`ownerguid`,`petitionguid`)']
+
+## petition_sign
+  + added: petition_id [int unsigned NOT NULL DEFAULT '0',] after petitionguid
+  ~ keys: ['KEY `Idx_ownerguid` (`ownerguid`)', 'KEY `Idx_playerguid` (`playerguid`)', 'PRIMARY KEY (`petitionguid`,`playerguid`)'] -> ['KEY `Idx_ownerguid` (`ownerguid`)', 'KEY `Idx_playerguid` (`playerguid`)', 'PRIMARY KEY (`petition_id`,`playerguid`)']
+
+## quest_tracker
+  ~ id: int(10) unsigned DEFAULT 0,  ->  int unsigned NOT NULL DEFAULT '0',
+  ~ keys: [] -> ['UNIQUE KEY `idx_latest_quest_for_character` (`id`,`character_guid`,`quest_accept_time` DESC)']
+
+## recovery_item
+  + added: DeleteDate [int unsigned DEFAULT NULL,] after Count
+
+## updates
+  ~ state: enum('RELEASED','CUSTOM','MODULE','ARCHIVED') NOT NULL DEFAULT 'RELEASED' COMMENT 'defines if an update is released or archived.',  ->  enum('RELEASED','CUSTOM','MODULE','ARCHIVED','PENDING') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'RELEASED' COMMENT 'defines if an update is released or archived.',
+
+## updates_include
+  ~ state: enum('RELEASED','ARCHIVED','CUSTOM') NOT NULL DEFAULT 'RELEASED' COMMENT 'defines if the directory contains released or archived updates.',  ->  enum('RELEASED','ARCHIVED','CUSTOM','PENDING') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'RELEASED' COMMENT 'defines if the directory contains released or archived updates.',
+
+## worldstates
+  ~ comment: tinytext DEFAULT NULL,  ->  tinytext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,

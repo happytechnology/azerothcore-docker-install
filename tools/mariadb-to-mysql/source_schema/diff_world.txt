@@ -1,0 +1,395 @@
+# raw/old_world_nodata.sql -> raw/new_world_nodata.sql
+
+only in OLD: ['emotetextsound_dbc', 'player_classlevelstats', 'playerbots_rpg_races', 'spell_proc_event']
+only in NEW: ['acore_string_locale', 'antidos_opcode_policies', 'arena_season_reward', 'arena_season_reward_group', 'creature_default_trainer', 'creature_immunities', 'creature_multispawn', 'creature_sparring', 'creature_template_model', 'creature_text_option_sets', 'creature_text_options', 'emotestextsound_dbc', 'gameobject_summon_groups', 'module_string', 'module_string_locale', 'player_shapeshift_model', 'player_totem_model', 'spawn_group', 'spawn_group_template', 'spell_cone', 'spell_jump_distance', 'trainer', 'trainer_locale', 'trainer_spell', 'vehicle_seat_addon', 'waypoint_data_addon']
+
+## achievement_reward
+  ~ Body: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+
+## achievement_reward_locale
+  ~ Subject: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Text: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+
+## acore_string
+  - removed: locale_koKR [text DEFAULT NULL,], locale_frFR [text DEFAULT NULL,], locale_deDE [text DEFAULT NULL,], locale_zhCN [text DEFAULT NULL,], locale_zhTW [text DEFAULT NULL,], locale_esES [text DEFAULT NULL,], locale_esMX [text DEFAULT NULL,], locale_ruRU [text DEFAULT NULL,]
+
+## areatrigger_tavern
+  ~ name: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+
+## areatrigger_teleport
+  ~ Name: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+
+## broadcast_text
+  ~ MaleText: longtext DEFAULT NULL,  ->  longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ FemaleText: longtext DEFAULT NULL,  ->  longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+
+## broadcast_text_locale
+  ~ MaleText: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ FemaleText: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+
+## charsections_dbc
+  + added: ID [int NOT NULL DEFAULT '0',] after FIRST, RaceID [int NOT NULL DEFAULT '0',] after ID, SexID [int NOT NULL DEFAULT '0',] after RaceID, BaseSection [int NOT NULL DEFAULT '0',] after SexID, TextureName_1 [varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,] after BaseSection, TextureName_2 [varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,] after TextureName_1, TextureName_3 [varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,] after TextureName_2, VariationIndex [int NOT NULL DEFAULT '0',] after Flags, ColorIndex [int NOT NULL DEFAULT '0',] after VariationIndex
+  - removed: Id [int(11) NOT NULL DEFAULT 0,], Race [int(11) NOT NULL DEFAULT 0,], Gender [int(11) NOT NULL DEFAULT 0,], GenType [int(11) NOT NULL DEFAULT 0,], TexturePath1 [varchar(100) DEFAULT NULL,], TexturePath2 [varchar(100) DEFAULT NULL,], TexturePath3 [varchar(100) DEFAULT NULL,], Type [int(11) NOT NULL DEFAULT 0,], Color [int(11) NOT NULL DEFAULT 0,]
+  ~ keys: ['PRIMARY KEY (`Id`) USING BTREE'] -> ['PRIMARY KEY (`ID`)']
+  ~ table opts: {'ENGINE': 'MyISAM', 'CHARSET': 'utf8mb4', 'COLLATE': 'utf8mb4_general_ci', 'ROW_FORMAT': 'DYNAMIC'} -> {'ENGINE': 'InnoDB', 'CHARSET': 'utf8mb4', 'COLLATE': 'utf8mb4_unicode_ci', 'ROW_FORMAT': None}
+
+## command
+  ~ help: longtext DEFAULT NULL,  ->  longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+
+## creature
+  + added: id [int unsigned NOT NULL DEFAULT '0' COMMENT 'Creature Identifier',] after guid
+  - removed: id1 [int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Creature Identifier',], id2 [int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Creature Identifier',], id3 [int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Creature Identifier',]
+  ~ Comment: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ keys: ['KEY `idx_id` (`id1`)', 'KEY `idx_map` (`map`)', 'PRIMARY KEY (`guid`)'] -> ['KEY `idx_id` (`id`)', 'KEY `idx_map` (`map`)', 'PRIMARY KEY (`guid`)']
+
+## creature_addon
+  ~ auras: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+
+## creature_classlevelstats
+  + added: Strength [int NOT NULL DEFAULT '0',] after damage_exp2, Agility [int NOT NULL DEFAULT '0',] after Strength, Stamina [int NOT NULL DEFAULT '0',] after Agility, Intellect [int NOT NULL DEFAULT '0',] after Stamina, Spirit [int NOT NULL DEFAULT '0',] after Intellect
+  ~ comment: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+
+## creature_formations
+  ~ keys: ['CONSTRAINT `creature_formations_chk_1` CHECK (`dist` >= 0 and `angle` >= 0)', 'PRIMARY KEY (`memberGUID`)'] -> ['CONSTRAINT `creature_formations_chk_1` CHECK (((`dist` >= 0) and (`angle` >= 0)))', 'PRIMARY KEY (`memberGUID`)']
+
+## creature_model_info
+  + added: VerifiedBuild [mediumint DEFAULT NULL,] after DisplayID_Other_Gender
+
+## creature_template
+  + added: CreatureImmunitiesId [int NOT NULL DEFAULT '0',] after RegenHealth
+  - removed: modelid1 [int(10) unsigned NOT NULL DEFAULT 0,], modelid2 [int(10) unsigned NOT NULL DEFAULT 0,], modelid3 [int(10) unsigned NOT NULL DEFAULT 0,], modelid4 [int(10) unsigned NOT NULL DEFAULT 0,], scale [float NOT NULL DEFAULT 1,], trainer_type [tinyint(4) NOT NULL DEFAULT 0,], trainer_spell [int(10) unsigned NOT NULL DEFAULT 0,], trainer_class [tinyint(3) unsigned NOT NULL DEFAULT 0,], trainer_race [tinyint(3) unsigned NOT NULL DEFAULT 0,], mechanic_immune_mask [int(10) unsigned NOT NULL DEFAULT 0,], spell_school_immune_mask [int(10) unsigned NOT NULL DEFAULT 0,]
+
+## creature_template_addon
+  ~ auras: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+
+## creature_template_locale
+  ~ Name: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Title: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+
+## creature_template_resistance
+  ~ keys: ['CONSTRAINT `creature_template_resistance_chk_1` CHECK (`School` >= 1 and `School` <= 6)', 'PRIMARY KEY (`CreatureID`,`School`)'] -> ['CONSTRAINT `creature_template_resistance_chk_1` CHECK (((`School` >= 1) and (`School` <= 6)))', 'PRIMARY KEY (`CreatureID`,`School`)']
+
+## creature_template_spell
+  ~ keys: ['CONSTRAINT `creature_template_spell_chk_1` CHECK (`Index` >= 0 and `Index` <= 7)', 'PRIMARY KEY (`CreatureID`,`Index`)'] -> ['CONSTRAINT `creature_template_spell_chk_1` CHECK (((`Index` >= 0) and (`Index` <= 7)))', 'PRIMARY KEY (`CreatureID`,`Index`)']
+
+## creature_text
+  ~ Text: longtext DEFAULT NULL,  ->  longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ keys: ['CONSTRAINT `creature_text_chk_1` CHECK (`Probability` >= 0)', 'PRIMARY KEY (`CreatureID`,`GroupID`,`ID`)'] -> ['CONSTRAINT `creature_text_chk_1` CHECK ((`Probability` >= 0))', 'PRIMARY KEY (`CreatureID`,`GroupID`,`ID`)']
+
+## creature_text_locale
+  ~ Text: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+
+## game_event
+  ~ start_time: timestamp NULL DEFAULT '2000-01-01 17:00:00' COMMENT 'Absolute start date, the event will never start before',  ->  timestamp NULL DEFAULT '2000-01-01 18:00:00' COMMENT 'Absolute start date, the event will never start before',
+  ~ end_time: timestamp NULL DEFAULT '2000-01-01 17:00:00' COMMENT 'Absolute end date, the event will never start after',  ->  timestamp NULL DEFAULT '2000-01-01 18:00:00' COMMENT 'Absolute end date, the event will never start after',
+
+## game_event_creature
+  ~ eventEntry: tinyint(4) NOT NULL COMMENT 'Entry of the game event. Put negative entry to remove during event.',  ->  smallint NOT NULL COMMENT 'Entry of the game event. Put negative entry to remove during event.',
+
+## game_event_gameobject
+  ~ eventEntry: tinyint(4) NOT NULL COMMENT 'Entry of the game event. Put negative entry to remove during event.',  ->  smallint NOT NULL COMMENT 'Entry of the game event. Put negative entry to remove during event.',
+
+## game_event_model_equip
+  ~ eventEntry: tinyint(4) NOT NULL COMMENT 'Entry of the game event.',  ->  tinyint unsigned NOT NULL COMMENT 'Entry of the game event.',
+
+## game_event_npc_vendor
+  ~ eventEntry: tinyint(4) NOT NULL COMMENT 'Entry of the game event.',  ->  smallint NOT NULL COMMENT 'Entry of the game event.',
+  ~ keys: ['KEY `slot` (`slot`)', 'PRIMARY KEY (`guid`,`item`)'] -> ['KEY `slot` (`slot`)', 'PRIMARY KEY (`eventEntry`,`guid`,`item`) USING BTREE']
+
+## game_event_pool
+  ~ eventEntry: tinyint(4) NOT NULL COMMENT 'Entry of the game event. Put negative entry to remove during event.',  ->  smallint NOT NULL COMMENT 'Entry of the game event. Put negative entry to remove during event.',
+
+## gameobject
+  ~ Comment: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+
+## gameobject_addon
+  + added: parent_rotation0 [float NOT NULL DEFAULT '0',] after guid, parent_rotation1 [float NOT NULL DEFAULT '0',] after parent_rotation0, parent_rotation2 [float NOT NULL DEFAULT '0',] after parent_rotation1, parent_rotation3 [float NOT NULL DEFAULT '1',] after parent_rotation2
+
+## gameobject_template_locale
+  ~ name: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ castBarCaption: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+
+## gossip_menu_option
+  ~ OptionText: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ BoxText: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+
+## gossip_menu_option_locale
+  ~ OptionText: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ BoxText: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+
+## graveyard_zone
+  ~ Comment: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+
+## item_enchantment_template
+  ~ keys: ['CONSTRAINT `item_enchantment_template_chk_1` CHECK (`chance` >= 0)', 'PRIMARY KEY (`entry`,`ench`)'] -> ['CONSTRAINT `item_enchantment_template_chk_1` CHECK ((`chance` >= 0))', 'PRIMARY KEY (`entry`,`ench`)']
+
+## item_set_names_locale
+  ~ Name: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+
+## item_template
+  - removed: StatsCount [tinyint(3) unsigned NOT NULL DEFAULT 0,]
+
+## item_template_locale
+  ~ Name: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Description: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+
+## lfgdungeons_dbc
+  ~ Name_Lang_enUS: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Name_Lang_enGB: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Name_Lang_koKR: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Name_Lang_frFR: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Name_Lang_deDE: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Name_Lang_enCN: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Name_Lang_zhCN: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Name_Lang_enTW: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Name_Lang_zhTW: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Name_Lang_esES: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Name_Lang_esMX: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Name_Lang_ruRU: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Name_Lang_ptPT: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Name_Lang_ptBR: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Name_Lang_itIT: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Name_Lang_Unk: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ TextureFilename: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Description_Lang_enUS: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Description_Lang_enGB: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Description_Lang_koKR: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Description_Lang_frFR: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Description_Lang_deDE: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Description_Lang_enCN: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Description_Lang_zhCN: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Description_Lang_enTW: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Description_Lang_zhTW: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Description_Lang_esES: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Description_Lang_esMX: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Description_Lang_ruRU: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Description_Lang_ptPT: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Description_Lang_ptBR: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Description_Lang_itIT: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Description_Lang_Unk: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+
+## map_dbc
+  ~ MapDescription0_Lang_enUS: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ MapDescription0_Lang_enGB: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ MapDescription0_Lang_koKR: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ MapDescription0_Lang_frFR: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ MapDescription0_Lang_deDE: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ MapDescription0_Lang_enCN: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ MapDescription0_Lang_zhCN: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ MapDescription0_Lang_enTW: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ MapDescription0_Lang_zhTW: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ MapDescription0_Lang_esES: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ MapDescription0_Lang_esMX: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ MapDescription0_Lang_ruRU: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ MapDescription0_Lang_ptPT: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ MapDescription0_Lang_ptBR: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ MapDescription0_Lang_itIT: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ MapDescription1_Lang_enUS: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ MapDescription1_Lang_enGB: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ MapDescription1_Lang_koKR: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ MapDescription1_Lang_frFR: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ MapDescription1_Lang_deDE: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ MapDescription1_Lang_enCN: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ MapDescription1_Lang_zhCN: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ MapDescription1_Lang_enTW: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ MapDescription1_Lang_zhTW: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ MapDescription1_Lang_esES: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ MapDescription1_Lang_esMX: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ MapDescription1_Lang_ruRU: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ MapDescription1_Lang_ptPT: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ MapDescription1_Lang_ptBR: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ MapDescription1_Lang_itIT: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+
+## npc_text
+  ~ text0_0: longtext DEFAULT NULL,  ->  longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ text0_1: longtext DEFAULT NULL,  ->  longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ text1_0: longtext DEFAULT NULL,  ->  longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ text1_1: longtext DEFAULT NULL,  ->  longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ text2_0: longtext DEFAULT NULL,  ->  longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ text2_1: longtext DEFAULT NULL,  ->  longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ text3_0: longtext DEFAULT NULL,  ->  longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ text3_1: longtext DEFAULT NULL,  ->  longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ text4_0: longtext DEFAULT NULL,  ->  longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ text4_1: longtext DEFAULT NULL,  ->  longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ text5_0: longtext DEFAULT NULL,  ->  longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ text5_1: longtext DEFAULT NULL,  ->  longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ text6_0: longtext DEFAULT NULL,  ->  longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ text6_1: longtext DEFAULT NULL,  ->  longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ text7_0: longtext DEFAULT NULL,  ->  longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ text7_1: longtext DEFAULT NULL,  ->  longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+
+## npc_text_locale
+  ~ Text0_0: longtext DEFAULT NULL,  ->  longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Text0_1: longtext DEFAULT NULL,  ->  longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Text1_0: longtext DEFAULT NULL,  ->  longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Text1_1: longtext DEFAULT NULL,  ->  longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Text2_0: longtext DEFAULT NULL,  ->  longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Text2_1: longtext DEFAULT NULL,  ->  longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Text3_0: longtext DEFAULT NULL,  ->  longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Text3_1: longtext DEFAULT NULL,  ->  longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Text4_0: longtext DEFAULT NULL,  ->  longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Text4_1: longtext DEFAULT NULL,  ->  longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Text5_0: longtext DEFAULT NULL,  ->  longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Text5_1: longtext DEFAULT NULL,  ->  longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Text6_0: longtext DEFAULT NULL,  ->  longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Text6_1: longtext DEFAULT NULL,  ->  longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Text7_0: longtext DEFAULT NULL,  ->  longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Text7_1: longtext DEFAULT NULL,  ->  longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+
+## npc_vendor
+  ~ maxcount: tinyint(3) unsigned NOT NULL DEFAULT 0,  ->  int unsigned NOT NULL DEFAULT '0',
+
+## outdoorpvp_template
+  ~ comment: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+
+## page_text_locale
+  ~ Text: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+
+## player_factionchange_achievement
+  + added: alliance_comment [text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,] after alliance_id, horde_comment [text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,] after horde_id
+
+## player_factionchange_reputations
+  + added: alliance_comment [text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,] after alliance_id, horde_comment [text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,] after horde_id
+
+## player_factionchange_titles
+  ~ alliance_comment: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ horde_comment: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+
+## player_loot_template
+  ~ Comment: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+
+## points_of_interest_locale
+  ~ Name: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+
+## pool_creature
+  ~ keys: ['CONSTRAINT `pool_creature_chk_1` CHECK (`chance` >= 0)', 'KEY `idx_guid` (`guid`)', 'PRIMARY KEY (`guid`)'] -> ['CONSTRAINT `pool_creature_chk_1` CHECK ((`chance` >= 0))', 'KEY `idx_guid` (`guid`)', 'PRIMARY KEY (`guid`)']
+
+## pool_gameobject
+  ~ keys: ['CONSTRAINT `pool_gameobject_chk_1` CHECK (`chance` >= 0)', 'KEY `idx_guid` (`guid`)', 'PRIMARY KEY (`guid`)'] -> ['CONSTRAINT `pool_gameobject_chk_1` CHECK ((`chance` >= 0))', 'KEY `idx_guid` (`guid`)', 'PRIMARY KEY (`guid`)']
+
+## quest_greeting
+  ~ Greeting: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+
+## quest_greeting_locale
+  ~ Greeting: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+
+## quest_offer_reward
+  ~ RewardText: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+
+## quest_offer_reward_locale
+  ~ RewardText: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+
+## quest_request_items
+  ~ CompletionText: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+
+## quest_request_items_locale
+  ~ CompletionText: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+
+## quest_template
+  ~ LogTitle: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ LogDescription: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ QuestDescription: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ AreaDescription: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ QuestCompletionLog: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ ObjectiveText1: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ ObjectiveText2: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ ObjectiveText3: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ ObjectiveText4: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+
+## quest_template_addon
+  + added: BreadcrumbForQuestId [mediumint unsigned NOT NULL DEFAULT '0',] after ExclusiveGroup
+  ~ SpecialFlags: tinyint(3) unsigned NOT NULL DEFAULT 0,  ->  int unsigned NOT NULL DEFAULT '0',
+
+## quest_template_locale
+  ~ Title: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Details: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Objectives: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ EndText: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ CompletedText: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ ObjectiveText1: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ ObjectiveText2: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ ObjectiveText3: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ ObjectiveText4: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+
+## script_waypoint
+  ~ point_comment: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+
+## spell_cooldown_overrides
+  ~ Comment: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+
+## spell_dbc
+  ~ Description_Lang_enUS: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Description_Lang_enGB: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Description_Lang_koKR: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Description_Lang_frFR: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Description_Lang_deDE: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Description_Lang_enCN: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Description_Lang_zhCN: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Description_Lang_enTW: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Description_Lang_zhTW: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Description_Lang_esES: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Description_Lang_esMX: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Description_Lang_ruRU: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Description_Lang_ptPT: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Description_Lang_ptBR: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Description_Lang_itIT: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ Description_Lang_Unk: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+
+## spell_enchant_proc_data
+  ~ keys: ['CONSTRAINT `spell_enchant_proc_data_chk_1` CHECK (`PPMChance` >= 0)', 'PRIMARY KEY (`entry`)'] -> ['CONSTRAINT `spell_enchant_proc_data_chk_1` CHECK ((`PPMChance` >= 0))', 'PRIMARY KEY (`entry`)']
+
+## spell_group
+  - removed: special_flag [int(10) unsigned NOT NULL DEFAULT 0,]
+  ~ spell_id: int(10) unsigned NOT NULL DEFAULT 0,  ->  int NOT NULL,
+
+## spell_proc
+  + added: DisableEffectsMask [int unsigned NOT NULL DEFAULT '0',] after AttributesMask
+
+## spellrange_dbc
+  ~ DisplayName_Lang_enUS: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ DisplayName_Lang_enGB: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ DisplayName_Lang_koKR: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ DisplayName_Lang_frFR: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ DisplayName_Lang_deDE: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ DisplayName_Lang_enCN: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ DisplayName_Lang_zhCN: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ DisplayName_Lang_enTW: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ DisplayName_Lang_zhTW: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ DisplayName_Lang_esES: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ DisplayName_Lang_esMX: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ DisplayName_Lang_ruRU: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ DisplayName_Lang_ptPT: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ DisplayName_Lang_ptBR: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ DisplayName_Lang_itIT: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ DisplayName_Lang_Unk: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ DisplayNameShort_Lang_enUS: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ DisplayNameShort_Lang_enGB: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ DisplayNameShort_Lang_koKR: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ DisplayNameShort_Lang_frFR: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ DisplayNameShort_Lang_deDE: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ DisplayNameShort_Lang_enCN: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ DisplayNameShort_Lang_zhCN: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ DisplayNameShort_Lang_enTW: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ DisplayNameShort_Lang_zhTW: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ DisplayNameShort_Lang_esES: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ DisplayNameShort_Lang_esMX: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ DisplayNameShort_Lang_ruRU: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ DisplayNameShort_Lang_ptPT: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ DisplayNameShort_Lang_ptBR: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ DisplayNameShort_Lang_itIT: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  ~ DisplayNameShort_Lang_Unk: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+
+## transports
+  ~ name: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+
+## updates
+  ~ state: enum('RELEASED','CUSTOM','MODULE','ARCHIVED') NOT NULL DEFAULT 'RELEASED' COMMENT 'defines if an update is released or archived.',  ->  enum('RELEASED','CUSTOM','MODULE','ARCHIVED','PENDING') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'RELEASED' COMMENT 'defines if an update is released or archived.',
+
+## updates_include
+  ~ state: enum('RELEASED','ARCHIVED','CUSTOM') NOT NULL DEFAULT 'RELEASED' COMMENT 'defines if the directory contains released or archived updates.',  ->  enum('RELEASED','ARCHIVED','CUSTOM','PENDING') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'RELEASED' COMMENT 'defines if the directory contains released or archived updates.',
+
+## waypoint_data
+  + added: velocity [float NOT NULL DEFAULT '0',] after orientation, smoothTransition [tinyint NOT NULL DEFAULT '0',] after delay
+
+## waypoints
+  ~ point_comment: text DEFAULT NULL,  ->  text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,

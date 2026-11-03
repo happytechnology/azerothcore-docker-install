@@ -1,0 +1,16 @@
+account id username salt verifier session_key totp_secret email reg_mail joindate last_ip last_attempt_ip failed_logins locked lock_country last_login online expansion mutetime mutereason muteby locale os recruiter totaltime
+account_access id gmlevel RealmID comment
+account_banned id bandate unbandate bannedby banreason active
+account_muted guid mutedate mutetime mutedby mutereason
+autobroadcast realmid id weight text
+build_info build majorVersion minorVersion bugfixVersion hotfixVersion winAuthSeed win64AuthSeed mac64AuthSeed winChecksumSeed macChecksumSeed
+ip_banned ip bandate unbandate bannedby banreason
+logs time realm type level string
+logs_ip_actions id account_id character_guid type ip systemnote unixtime time comment
+motd realmid text
+realmcharacters realmid acctid numchars
+realmlist id name address localAddress localSubnetMask port icon flag timezone allowedSecurityLevel population gamebuild
+secret_digest id digest
+updates name hash state timestamp speed
+updates_include path state
+uptime realmid starttime uptime maxplayers revision
