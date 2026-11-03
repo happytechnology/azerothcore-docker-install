@@ -1,18 +1,19 @@
-# AzerothCore WotLK Docker Install Guide (Arch Linux)
+# AzerothCore WotLK Docker Install Guide (Arch Linux) — with Playerbots
 
-Repeatable installation of AzerothCore WotLK using Docker with the official `mysql:8.4` image.
+Repeatable installation of AzerothCore WotLK using Docker with the official `mysql:8.4` image and the **Playerbot fork** (required for full playerbots support).
 
-This guide consolidates the steps that successfully worked around MySQL source-build issues (OOM/LTO) by using the official AzerothCore Docker setup. It covers a clean install from scratch.
+This guide consolidates the steps that successfully worked around MySQL source-build issues (OOM/LTO) by using the official AzerothCore Docker setup. It installs the Playerbot fork plus recommended modules: `mod-playerbots`, `mod-no-hearthstone-cooldown`, `mod-dungeon-clear`, and `mod-npc-enchanter`.
 
 ## One-command install
 
-A single script is provided that automates the entire process.
+A single script is provided that automates the entire process (Playerbot fork + modules + override file).
 
 ### Usage
 
 ```bash
-# Install git
+# Install git if needed
 sudo pacman -S git --noconfirm
+
 # Clone this repository first (or download the script)
 git clone https://github.com/happytechnology/azerothcore-docker-install.git
 cd azerothcore-docker-install
@@ -22,7 +23,7 @@ chmod +x install.sh
 ./install.sh 10.0.0.18
 ```
 
-The script installs packages, enables Docker + BuildKit, clones AzerothCore, starts the stack, waits for the database to become healthy, and (if an IP was given) updates the realmlist.
+The script installs packages, enables Docker + BuildKit, clones the Playerbot fork of AzerothCore, clones the four modules, creates `docker-compose.override.yml`, starts the stack, waits for the database to become healthy, and (if an IP was given) updates the realmlist.
 
 ### After it finishes, attach to the worldserver and create accounts as usual:
 
@@ -34,6 +35,8 @@ At the `AC>` prompt:
 
 ```
 account create YOURUSERNAME yourpassword 3 -1
+.server debug          # verify modules loaded
+.npc add 601015        # optional: spawn the enchanter NPC
 ```
 
 Detach with `Ctrl+P` then `Ctrl+Q` (**do not** use `Ctrl+C`).
@@ -42,7 +45,7 @@ Detach with `Ctrl+P` then `Ctrl+Q` (**do not** use `Ctrl+C`).
 
 - Arch Linux (updated)
 - A normal user with `sudo` privileges
-- Sufficient disk space (client data + database volumes) and RAM (the Docker build is memory-intensive; 8 GB+ recommended)
+- Sufficient disk space (client data + database volumes) and RAM (the Docker build is memory-intensive; 8 GB+ recommended; more for high bot counts)
 - Git
 
 ## Manual steps (if you prefer not to use the script)
@@ -57,93 +60,60 @@ sudo usermod -aG docker $USER
 newgrp docker          # or log out and back in so the group change takes effect
 ```
 
-Verify:
-
-```bash
-docker --version
-docker compose version
-docker buildx version
-```
-
 ### 2. Enable BuildKit
-
-BuildKit is required by the AzerothCore Dockerfile (`RUN --mount=...`).
-
-**Temporary (current shell):**
-
-```bash
-export DOCKER_BUILDKIT=1
-export COMPOSE_DOCKER_CLI_BUILD=1
-```
-
-**Permanent:**
 
 ```bash
 sudo mkdir -p /etc/docker
 echo '{"features":{"buildkit":true}}' | sudo tee /etc/docker/daemon.json
 sudo systemctl restart docker
+export DOCKER_BUILDKIT=1
+export COMPOSE_DOCKER_CLI_BUILD=1
 ```
 
-If you see a warning about the buildx plugin, the classic builder still works for this setup once BuildKit is enabled.
-
-### 3. Clone AzerothCore
+### 3. Clone the Playerbot fork
 
 ```bash
 cd ~
-git clone https://github.com/azerothcore/azerothcore-wotlk.git --depth 1
+git clone https://github.com/mod-playerbots/azerothcore-wotlk.git --branch Playerbot --depth 1 azerothcore-wotlk
 cd azerothcore-wotlk
 ```
 
-All subsequent commands must be run from inside this directory.
+### 4. Clone modules and create override
 
-> If you need a specific fork (e.g. Playerbot), clone that repository and check out the correct branch instead.
+```bash
+mkdir -p modules
+cd modules
+git clone https://github.com/mod-playerbots/mod-playerbots.git
+git clone https://github.com/BytesGalore/mod-no-hearthstone-cooldown.git
+git clone https://github.com/jrad7/mod-dungeon-clear.git
+git clone https://github.com/azerothcore/mod-npc-enchanter.git
+cd ..
 
-### 4. Start the stack
+cat > docker-compose.override.yml << 'EOF'
+services:
+  ac-worldserver:
+    volumes:
+      - ./modules:/azerothcore/modules:ro
+  ac-authserver:
+    volumes:
+      - ./modules:/azerothcore/modules:ro
+  ac-db-import:
+    volumes:
+      - ./modules:/azerothcore/modules:ro
+EOF
+```
+
+### 5. Start the stack
 
 ```bash
 docker compose up -d --build
 ```
 
-The first run takes a while (image build + client data download + initial database setup via `ac-db-import`). Monitor progress:
+Monitor with `docker compose logs -f` and confirm `ac-database` is healthy.
 
-```bash
-docker compose logs -f
-```
+### 6. Update realmlist and create account
 
-Confirm the database is healthy before proceeding:
-
-```bash
-docker compose ps
-# ac-database should show (healthy)
-```
-
-The `ac-db-import` service is a one-shot container that runs only on first start (or after the database volume is removed). Once it completes successfully, the auth and world servers start.
-
-### 5. Update realmlist (recommended)
-
-By default the realm address is `127.0.0.1`. Update it to the IP clients will use:
-
-```bash
-docker exec -i ac-database mysql -uroot -ppassword acore_auth -e "UPDATE realmlist SET address='YOUR_SERVER_IP', flag=0 WHERE id=1;"
-```
-
-Replace `YOUR_SERVER_IP` with the address clients can reach (e.g. `10.0.0.18` or a public IP). Flag `0` marks the realm as online/normal.
-
-### 6. Create an account
-
-Attach to the worldserver console:
-
-```bash
-docker attach ac-worldserver
-```
-
-At the `AC>` prompt:
-
-```
-account create YOURUSERNAME yourpassword 3 -1
-```
-
-Detach with `Ctrl+P` then `Ctrl+Q` (**do not** use `Ctrl+C`).
+See the one-command section above.
 
 ## Useful commands
 
@@ -156,28 +126,67 @@ Detach with `Ctrl+P` then `Ctrl+Q` (**do not** use `Ctrl+C`).
 | Rebuild after updates     | `docker compose up -d --build`               |
 | Shell into MySQL          | `docker exec -it ac-database mysql -uroot -ppassword` |
 | Attach to worldserver     | `docker attach ac-worldserver`               |
+| Check loaded modules      | `.server debug` (inside worldserver)         |
+| Spawn enchanter NPC       | `.npc add 601015`                            |
 
 Default MySQL root password is `password`.
 
-## Migrating an existing MariaDB database
-
-A database exported from MariaDB 10.11 (Debian 12; `mariadb-dump`) does not load into this stack's MySQL 8.4 as-is. Imports fail with ERROR 1064 (an `INSERT` split off its row lines), ERROR 1136 (no column list, and several tables changed width), and ERROR 1062 (duplicate keys on tables `ac-db-import` already filled).
-
-Use the converter and the full procedure in [tools/mariadb-to-mysql/README.md](tools/mariadb-to-mysql/README.md): how to dump MariaDB, how the column mapping works, and the `docker exec` / `docker compose` commands for `ac-database`, `ac-authserver`, and `ac-worldserver`. Import order is auth, then characters, then playerbots.
-
-Leave the old `acore_world` dump unused. `ac-db-import` loads the world database this core expects. The converter was checked in Python against real dumps (row counts matched) and has not yet been imported into a live MySQL 8.4 server; that import is being tested now.
-
-Data persists in Docker volumes (`ac-database`, client data volumes) and survives container restarts. To fully reset the database, stop the stack and remove the volume:
+Data persists in Docker volumes and survives container restarts. To fully reset the database:
 
 ```bash
 docker compose down
 docker volume rm azerothcore-wotlk_ac-database
 ```
 
+## Configuring Playerbots
+
+After the first start, the configuration file appears at:
+
+```
+env/dist/etc/modules/playerbots.conf
+```
+
+You can edit it on the host and restart the worldserver (`docker compose restart ac-worldserver`).
+
+### Key settings (recommended starting point)
+
+Open `playerbots.conf` and look for these (names may be `AiPlayerbot.` or `Playerbots.` depending on version):
+
+- `Playerbots.Enabled = 1` — must be on
+- `Playerbots.RandomBotAutologin = 1` — bots log in automatically
+- `Playerbots.MinRandomBots = 50` / `Playerbots.MaxRandomBots = 200` — adjust to your hardware (start low)
+- `AiPlayerbot.BotActiveAlone = 10` — lower value = bots idle more when no real players nearby (better performance)
+- `AiPlayerbot.DisabledWithoutRealPlayer = 1` — optional: bots only log in when a real player is online
+
+Many options can also be set as environment variables in `docker-compose.override.yml` (uppercase, dots → underscores, prefix `AC_`):
+
+```yaml
+services:
+  ac-worldserver:
+    environment:
+      AC_PLAYERBOTS_RANDOM_BOT_AUTOLOGIN: "1"
+      AC_PLAYERBOTS_MIN_RANDOM_BOTS: "50"
+      AC_PLAYERBOTS_MAX_RANDOM_BOTS: "200"
+```
+
+Full documentation: https://github.com/mod-playerbots/mod-playerbots/wiki/Playerbot-Configuration
+
+### Performance tips
+
+- Start with a low bot count and increase while watching `.server info` latency (keep under ~80 ms if possible).
+- MySQL benefits from a larger `innodb_buffer_pool_size` (ideally ~50% of RAM). You can add a custom MySQL config via volume mount if needed.
+- Restart the worldserver periodically if memory usage grows with high bot counts.
+
+## Other helpful tips
+
+- Prefer targeted restarts (`docker compose restart ac-authserver ac-worldserver`) after the initial import so the one-shot `ac-db-import` does not re-run.
+- Ports: Auth `3724`, World `8085`, SOAP `7878`, MySQL `3306`.
+- Client `realmlist.wtf`: `set realmlist YOUR_SERVER_IP`
+- To update later: `git pull` inside the core and each module directory, then `docker compose up -d --build`.
+
 ## Notes
 
 - Official AzerothCore Docker guide: https://www.azerothcore.org/wiki/install-with-docker
+- Playerbot fork: https://github.com/mod-playerbots/azerothcore-wotlk (branch `Playerbot`)
 - Source document referenced during setup: https://zread.ai/azerothcore/azerothcore-wotlk/3-docker-deployment
 - The Docker setup uses the official `mysql:8.4` image, so you do not need to compile MySQL from source.
-- After the initial `ac-db-import` finishes, prefer targeted restarts (`docker compose restart ac-authserver ac-worldserver`) rather than a full `docker compose up` if you want to avoid re-triggering the one-shot import service.
-- Ports exposed by default: Auth `3724`, World `8085` / SOAP `7878`, MySQL `3306`.
