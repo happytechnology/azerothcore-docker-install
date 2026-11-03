@@ -6,7 +6,7 @@ This guide consolidates the steps that successfully worked around MySQL source-b
 
 ## One-command install
 
-A single script is provided that automates the entire process (Playerbot fork + modules + override file + config templates).
+A single script is provided that automates the entire process (Playerbot fork + modules + override file + config templates + valid realmlist).
 
 ### Usage
 
@@ -23,7 +23,7 @@ chmod +x install.sh
 ./install.sh 10.0.0.18
 ```
 
-The script installs packages, enables Docker + BuildKit, clones the Playerbot fork of AzerothCore, clones the four modules, creates `docker-compose.override.yml`, copies module `.conf.dist` templates into place (so the server does not warn about missing configs), starts the stack, waits for the database to become healthy, and (if an IP was given) updates the realmlist.
+The script installs packages, enables Docker + BuildKit, clones the Playerbot fork of AzerothCore, clones the four modules, creates `docker-compose.override.yml`, copies module `.conf.dist` templates into place (so the server does not warn about missing configs), starts the stack, waits for the database to become healthy, ensures a valid default realm exists in `realmlist`, sets the server IP if provided, and restarts the authserver.
 
 ### After it finishes, attach to the worldserver and create accounts as usual:
 
@@ -122,7 +122,33 @@ docker compose up -d --build
 
 Monitor with `docker compose logs -f` and confirm `ac-database` is healthy.
 
-### 6. Update realmlist and create account
+### 6. Ensure a valid realm and set the server IP
+
+The authserver will refuse to start if the `realmlist` table is empty or every realm has an offline/version-mismatch flag. Create (or repair) the default realm, then set the address clients will use:
+
+```bash
+# Create or repair the default realm (id=1, flag=0, port=8085)
+docker exec -i ac-database mysql -uroot -ppassword acore_auth -e "
+INSERT INTO realmlist (id, name, address, localAddress, localSubnetMask, port, icon, flag, timezone, allowedSecurityLevel, population, gamebuild)
+VALUES (1, 'AzerothCore', '127.0.0.1', '127.0.0.1', '255.255.255.0', 8085, 0, 0, 1, 0, 0, 12340)
+ON DUPLICATE KEY UPDATE
+  address = IF(address = '' OR address IS NULL, '127.0.0.1', address),
+  flag = 0,
+  port = 8085;
+"
+
+# Set the address to the IP clients can reach
+docker exec -i ac-database mysql -uroot -ppassword acore_auth -e "
+UPDATE realmlist SET address='YOUR_SERVER_IP', flag=0 WHERE id=1;
+"
+
+# Restart authserver so it reloads the realmlist
+docker compose restart ac-authserver
+```
+
+Replace `YOUR_SERVER_IP` with the LAN IP, public IP, or hostname that your WoW client will use. The install script performs these steps automatically when you pass an IP as the first argument.
+
+### 7. Create an account
 
 See the one-command section above.
 
@@ -139,6 +165,7 @@ See the one-command section above.
 | Attach to worldserver     | `docker attach ac-worldserver`               |
 | Check loaded modules      | `.server debug` (inside worldserver)         |
 | Spawn enchanter NPC       | `.npc add 601015`                            |
+| Check realmlist           | `docker exec -i ac-database mysql -uroot -ppassword acore_auth -e "SELECT id, name, address, port, flag FROM realmlist;"` |
 
 Default MySQL root password is `password`.
 
@@ -195,6 +222,7 @@ Full documentation: https://github.com/mod-playerbots/mod-playerbots/wiki/Player
 - Client `realmlist.wtf`: `set realmlist YOUR_SERVER_IP`
 - To update later: `git pull` inside the core and each module directory, then `docker compose up -d --build`.
 - The “Can't set process priority class” message is normal in Docker and can be ignored.
+- If the authserver logs “No valid realms specified”, re-run the realmlist commands in step 6 above.
 
 ## Notes
 
