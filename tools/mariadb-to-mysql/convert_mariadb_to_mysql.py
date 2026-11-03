@@ -6,6 +6,9 @@ Every row is mapped BY NAME: old position -> old column name (from the dump's ow
 -> new column (target_schema/<db>.cols, taken from the new server's MySQL 8.4 --no-data dumps).
 Known schema changes get explicit transforms (see TRANSFORMS / DIFF_REPORT.md).
 
+An acore_world dump is refused. Back that database up, then leave the file as an archive:
+do not convert it and do not import it. ac-db-import loads a fresh world.
+
 Usage:
   python3 convert_mariadb_to_mysql.py IN.sql OUT.sql [--dup ignore|replace|error] [--truncate]
          [--skip-tables a,b] [--db acore_characters] [--target-schema new_nodata.sql]
@@ -142,8 +145,19 @@ def load_fills(db):
             if d == db: fills.setdefault(t, {})[c] = v.strip()
     return fills
 
+def header_database(path):
+    """Database name from the mariadb-dump --databases comment in the first 10 lines."""
+    with open(path, encoding='utf-8', errors='surrogateescape') as f:
+        for _ in range(10):
+            m = re.search(r'Database: (\w+)', f.readline())
+            if m: return m.group(1)
+    return None
+
 def main():
-    ap = argparse.ArgumentParser()
+    ap = argparse.ArgumentParser(
+        description='Convert an AzerothCore MariaDB dump to data-only SQL for MySQL 8.4. '
+                    'Refuses an acore_world dump: back that database up and keep the file as an archive. '
+                    'Do not convert it and do not import it; ac-db-import loads a fresh world.')
     ap.add_argument('inp'); ap.add_argument('out')
     ap.add_argument('--target-schema', help='mysqldump --no-data of the new DB (overrides bundled)')
     ap.add_argument('--db'); ap.add_argument('--no-embedded', action='store_true')
@@ -154,12 +168,13 @@ def main():
     a = ap.parse_args()
     skip = {t for t in a.skip_tables.split(',') if t}
     only = {t for t in a.only_tables.split(',') if t}
-    db = a.db
-    if not db:
-        with open(a.inp, encoding='utf-8', errors='surrogateescape') as f:
-            for _ in range(10):
-                m = re.search(r'Database: (\w+)', f.readline())
-                if m: db = m.group(1); break
+    header_db = header_database(a.inp)
+    db = a.db or header_db
+    if db == 'acore_world' or header_db == 'acore_world':
+        print('refusing to convert acore_world: that dump is an archive only. '
+              'Keep the file. Do not convert it and do not import it into MySQL 8.4. '
+              'ac-db-import loads a fresh world.', file=sys.stderr)
+        sys.exit(2)
     target = None
     if a.target_schema:
         target = {}

@@ -183,6 +183,7 @@ docker volume rm azerothcore-wotlk_ac-database
 
 ## Configuring modules
 
+Dump the old `acore_world` with the other databases and keep that file. Do not convert it and do not import it. `ac-db-import` loads the world database this core expects. The dump is the archive for finding custom world edits and re-applying them by hand. The converter was checked in Python against real dumps (row counts matched) and has not yet been imported into a live MySQL 8.4 server; that import is being tested now.
 Module configuration files live under `env/dist/etc/modules/`. The install script (and the manual steps above) copy the `.conf.dist` templates into place so the worldserver does not log “Failed open file” warnings.
 
 You can edit those files on the host and restart the worldserver for changes to take effect:

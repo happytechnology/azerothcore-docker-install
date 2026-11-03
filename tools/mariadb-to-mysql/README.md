@@ -201,7 +201,7 @@ Old dumps of these tables also carry MariaDB-only syntax the converter never emi
 
 ### `acore_world` — leave the old dump unused
 
-Do not convert or import the old world database. `ac-db-import` loads the world the new core was built with. The 2026-11-02 diff (`source_schema/diff_world.txt`) found **72 tables** that differ, plus tables that exist on only one side.
+Dump `acore_world` in step 1 and keep that file. It is an archive, not an input to this converter. Do not convert or import the old world database. `ac-db-import` loads the world the new core was built with. The 2026-11-02 diff (`source_schema/diff_world.txt`) found **72 tables** that differ, plus tables that exist on only one side.
 
 Structural changes (columns added or removed, which a positional `INSERT` will mis-bind):
 
@@ -223,7 +223,7 @@ Structural changes (columns added or removed, which a positional `INSERT` will m
 
 Tables present only in the old world dump include `playerbots_rpg_races`, `spell_proc_event`, `player_classlevelstats`, and `emotetextsound_dbc` (the new name is `emotestextsound_dbc`). Tables present only in the new world include `trainer`, `trainer_spell`, `spawn_group`, `creature_template_model`, and `acore_string_locale`. The rest of the 72 are mostly MySQL reprinting `TEXT` columns with an explicit charset. The raw list is `source_schema/diff_world.txt`.
 
-Custom world edits made on the old server are not migrated by this toolkit. Module world rows (dungeon suggestions, RPG tables, and anything under the module's `sql/world` base files) come from the module's own SQL on first start, not from the old `acore_world` dump.
+Custom world edits made on the old server are not migrated by this toolkit. The kept `acore_world` dump is the archive you diff against the new world to find those edits and re-apply them by hand. Module world rows (dungeon suggestions, RPG tables, and anything under the module's `sql/world` base files) come from the module's own SQL on first start, not from the old `acore_world` dump.
 
 ## What the converter does
 
@@ -236,6 +236,8 @@ Custom world edits made on the old server are not migrated by this toolkit. Modu
 5. Writes `INSERT IGNORE` / `REPLACE` / `INSERT` with an explicit column list in **new-schema order**. Columns the new table does not have are dropped and listed on stderr. Columns only the new table has are omitted so MySQL applies the default, except the `NOT NULL` fills in `notnull_nodefault.txt`.
 
 The database name is the first `Database: <name>` comment in the first 10 lines of the file, which is where `mariadb-dump --databases` puts it. That name selects `target_schema/<db>.cols`. One database per dump file. A combined dump would lock the column map to whichever database was named first.
+
+If that name is `acore_world`, or the dump header says `Database: acore_world` even when `--db` names something else, the script exits with status 2 and writes no output. The world file stays an archive.
 
 Output starts with `SET NAMES utf8mb4`, `FOREIGN_KEY_CHECKS=0`, `UNIQUE_CHECKS=0`, `sql_mode='NO_AUTO_VALUE_ON_ZERO'` (so an explicit `0` id is stored as `0`), and `time_zone='+00:00'`. DDL, view definitions, routines, and MariaDB session settings from the source are dropped. The new core's schema is the one that already exists in MySQL.
 
@@ -276,6 +278,8 @@ If `docker` says permission denied because the install script just added your us
 
 This export is the backup of the old server. Keep the files. Do not import them directly.
 
+Dump `acore_world` as well, into its own file, with the same flags as the other databases. That file is archive-only: keep it, never convert it, never import it into MySQL 8.4. `ac-db-import` loads a fresh world, and 72 world tables differ from this schema, so a converted import would bind columns wrong. Custom world edits are not migrated; the dump is what you diff later to find them, and the copy you still have once the old host is gone.
+
 On the Debian 12 host, with the old authserver and worldserver stopped:
 
 ```bash
@@ -295,6 +299,7 @@ dump_one() {
 dump_one acore_auth        old_auth.sql
 dump_one acore_characters  old_characters.sql
 dump_one acore_playerbots  old_playerbots.sql
+dump_one acore_world       old_world.sql    # archive only: keep, never convert, never import into MySQL 8.4
 ```
 
 `mysqldump` with the same flags is fine when it is the MariaDB client symlink. Use the old server's real user if it is not `root`.
@@ -314,7 +319,7 @@ Do not pass `--no-create-info`. The converter learns column order from `CREATE T
 
 `--single-transaction` does not snapshot MyISAM. The old playerbots tables are MyISAM, which is why the game servers must be stopped first.
 
-Do not dump `acore_world`. Do not pipe the files through `sed` or split them by line. Copy them off the host before you shut the old machine down.
+`old_world.sql` is archive-only. The converter refuses it. Do not pipe any of these files through `sed` or split them by line. Copy them off the host before you shut the old machine down.
 
 ### 2. Start the new stack once, including mod-playerbots
 
@@ -391,7 +396,7 @@ Omit `acore_playerbots` from that list if the database does not exist yet. `acor
 
 ### 4. Convert
 
-From any working directory. The script finds `target_schema/` next to itself.
+From any working directory. The script finds `target_schema/` next to itself. Do not pass `old_world.sql`. The converter exits if that dump is `acore_world` and writes nothing.
 
 ```bash
 cd "$GUIDE/tools/mariadb-to-mysql"
@@ -603,9 +608,9 @@ From this directory:
 python3 tests/test_changed_tables.py
 ```
 
-Seventeen checks, one per changed table plus the stub-line, playerbot-skip, and `--only-tables` cases. Fixtures are `tests/old_auth.sql` and `tests/old_chars.sql`. They are synthetic (short tokens, `0x01`-style blobs, placeholder mail). They are the only data rows in this tree.
+Eighteen checks, one per changed table plus the stub-line, playerbot-skip, `--only-tables`, and `acore_world` refusal cases. Fixtures are `tests/old_auth.sql` and `tests/old_chars.sql`. They are synthetic (short tokens, `0x01`-style blobs, placeholder mail). They are the only data rows in this tree. The world-refusal check writes a tiny header to `/tmp` and does not add a dump to the tree.
 
-`tests/count_rows.py` is the before/after counter used in step 4. It is not part of the seventeen checks. Run it from this directory so `import convert_mariadb_to_mysql` resolves:
+`tests/count_rows.py` is the before/after counter used in step 4. It is not part of the eighteen checks. Run it from this directory so `import convert_mariadb_to_mysql` resolves:
 
 ```bash
 python3 tests/count_rows.py tests/old_auth.sql /tmp/auth_converted.sql
